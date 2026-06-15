@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>DTP Compare Tool</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body class="dark">
+    <div class="container">
+      <header>
+        <h1>📝 DTP Compare Tool</h1>
+
+        <div style="display: flex; gap: 10px; align-items: center">
+          <select id="fontSizeSelect" title="Thay đổi kích cỡ chữ">
+            <option value="small">🔹</option>
+            <option value="medium" selected>🔷</option>
+            <option value="large">🔶</option>
+          </select>
+         
+
+          <button id="helpToggle" title="Mở hướng dẫn sử dụng">❓</button>
+
+          <button id="layoutToggle" title="Chuyển đổi bố cục">📐</button>
+
+          <button id="themeToggle" title="Chế độ sáng/tối">☀️</button>
+        </div>
+      </header>
+
+      <div id="helpModal" class="help-modal hidden">
+        <div class="help-content">
+          <div class="help-header">
+            <h2>📖 Hướng Dẫn Sử Dụng</h2>
+            <button id="closeHelp" class="close-btn">✕</button>
+          </div>
+          <div class="help-body">
+            <div class="help-section">
+              <h3>1. Nhập Văn Bản</h3>
+              <p>Nhập văn bản gốc vào ô bên trái và văn bản cần kiểm tra vào ô bên phải. Công cụ sẽ tự động so sánh khi bạn nhập.</p>
+            </div>
+            <div class="help-section">
+              <h3>2. Kết Quả So Sánh</h3>
+              <p><span class="error-char-demo">🔴</span> <strong>Ký tự sai/thừa:</strong> Ký tự được đánh dấu bằng nền màu đỏ là ký tự sai hoặc thừa trong bản kiểm tra.</p>
+              <p><span class="missing-char-demo"></span> <strong>Ký tự thiếu:</strong> Hộp xanh nhỏ biểu thị ký tự bị thiếu so với bản gốc.</p>
+            </div>
+            <div class="help-section">
+              <h3>3. Các Nút Điều Khiển</h3>
+              <p><strong>🔹/🔷/🔶:</strong> Thay đổi kích cỡ chữ (nhỏ, vừa, lớn)</p>
+              <p><strong>🖊️:</strong> Bật/tắt chế độ chỉnh sửa (xem nhanh)</p>
+              <p><strong>❓:</strong> Hiển thị hướng dẫn này</p>
+              <p><strong>📐:</strong> Chuyển đổi giữa bố cục một cột và hai cột</p>
+              <p><strong>☀️/🌙:</strong> Chuyển đổi giữa chế độ sáng và tối</p>
+              <p><strong>⬆️/⬇️:</strong> Thu gọn hoặc mở rộng chiều cao ô nhập liệu</p>
+              <p><strong>➡️/⬅️:</strong> Ẩn/hiện bản gốc để xem toàn màn hình bản kiểm tra</p>
+            </div>
+            <div class="help-section">
+              <h3>4. Điều Hướng Nhanh (Chế Độ Chỉnh Sửa)</h3>
+              <p><strong>Bật chế độ chỉnh sửa:</strong> Nhấn nút 🖊️ ở header để bật chế độ chỉnh sửa. Khi bật, button sẽ hiển thị rõ ràng (không mờ).</p>
+              <p><strong>Hover lên ký tự:</strong> Di chuột qua bất kỳ ký tự nào trong bảng kết quả để thấy highlight vàng nhẹ và ký tự to lên 8%.</p>
+              <p><strong>Nhấn vào ký tự:</strong> Click vào bất kỳ ký tự nào để tự động scroll đến vị trí đó trong ô input (bên trái hoặc bên phải). Ký tự sẽ được highlight vàng rõ ràng trong 2 giây.</p>
+              <p><strong>Chế độ xem bình thường:</strong> Khi tắt chế độ chỉnh sửa, các ký tự sẽ xem bình thường mà không có hover effect hay click handler. Button 🖊️ sẽ mờ đi.</p>
+              <p><strong>Tính năng này hỗ trợ:</strong> Tất cả ký tự (bình thường, lỗi, thiếu), giúp bạn nhanh chóng tìm vị trí sai lỗi trong văn bản gốc.</p>
+            </div>         
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-grid">
+        <div class="panel">
+          <h2>📄 Văn Bản Gốc</h2>
+
+          <div class="editor-wrapper">
+            <textarea id="source" dir="ltr" placeholder="Nhập văn bản gốc..."></textarea>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>✏️ Văn Bản Kiểm Tra</h2>
+
+          <div class="editor-wrapper">
+            <textarea
+              id="target"
+              dir="ltr"
+              placeholder="Nhập văn bản cần so sánh..."
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; margin: 10px 0;">
+        <button id="heightToggle" class="height-toggle-btn" title="Thu gọn/mở rộng chiều cao input">⬆️</button>
+      </div>
+
+      <div class="panel">
+        <div class="result-header">
+          <h2>📌 Kết Quả</h2>
+
+          <div class="result-actions">
+            <button id="resultToggle" class="toggle-result-btn" title="Ẩn bản gốc và mở rộng bản kiểm tra">➡</button>
+             <button id="editModeToggle" title="Bật/tắt chế độ chỉnh sửa (xem nhanh)">🖊️</button>
+          </div>
+
+          <div class="status-wrap">
+            <div id="statusLight" class="status-light ok"></div>
+
+            <span id="statusText"> Không có lỗi </span>
+          </div>
+        </div>
+
+        <div id="result">
+          <div class="comparison-grid">
+            <div class="comparison-panel">
+              <div class="comparison-title">Bản gốc</div>
+              <div id="resultOriginal" class="result-text"></div>
+            </div>
+
+            <div class="comparison-panel">
+              <div class="comparison-title">Bản kiểm tra</div>
+              <div id="resultChecked" class="result-text"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>Made by anhthodev 🚀</footer>
+    </div>
+
+    <!-- STICKY HEADER -->
+
+    <div id="stickyHeader" class="sticky-header hidden">
+      <div class="sticky-content">
+        <a id="logoHome" href="#" class="logo-at"> AT </a>
+
+        <div class="spacer"></div>
+
+        <button id="themeToggleSticky">☀️</button>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
