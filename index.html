@@ -57,7 +57,9 @@
               <p><strong>❓:</strong> Hiển thị hướng dẫn này</p>
               <p><strong>📐:</strong> Chuyển đổi giữa bố cục một cột và hai cột</p>
               <p><strong>☀️/🌙:</strong> Chuyển đổi giữa chế độ sáng và tối</p>
-              <p><strong>⬆️/⬇️:</strong> Thu gọn hoặc mở rộng chiều cao ô nhập liệu</p>
+              <p><strong>⇔:</strong> Mở rộng hoặc thu gọn width của vùng input</p>
+              <p><strong>⇕/⬚:</strong> Bung ô nhập để thấy hết nội dung hoặc thu về chiều cao mặc định</p>
+              <p><strong>Cụm nút bên phải:</strong> Khi cuộn xuống, các nút điều khiển sẽ nổi ở góc phải giữa màn hình.</p>
               <p><strong>➡️/⬅️:</strong> Ẩn/hiện bản gốc để xem toàn màn hình bản kiểm tra</p>
             </div>
             <div class="help-section">
@@ -94,8 +96,10 @@
         </div>
       </div>
 
-      <div style="display: flex; justify-content: center; margin: 10px 0;">
-        <button id="heightToggle" class="height-toggle-btn" title="Thu gọn/mở rộng chiều cao input">⬆️</button>
+      <div class="input-controls">
+        <button id="heightToggle" class="height-toggle-btn" title="Mở hết chiều cao input">⬚</button>
+
+        <button id="widthToggleSticky" class="width-toggle-btn" title="Mở rộng/thu gọn width input">⇔</button>
       </div>
 
       <div class="panel">
@@ -136,11 +140,7 @@
 
     <div id="stickyHeader" class="sticky-header hidden">
       <div class="sticky-content">
-        <a id="logoHome" href="#" class="logo-at"> AT </a>
-
-        <div class="spacer"></div>
-
-        <button id="themeToggleSticky">☀️</button>
+        <button id="scrollTopButton" title="Về đầu trang">⬆</button>
       </div>
     </div>
 

@@ -41,7 +41,55 @@ const fontSizeSelect =
 const editModeToggle =
     document.getElementById("editModeToggle");
 
+const stickyHeader =
+    document.getElementById("stickyHeader");
+
+const widthToggleSticky =
+    document.getElementById("widthToggleSticky");
+
+const scrollTopButton =
+    document.getElementById("scrollTopButton");
+
 let isEditMode = localStorage.getItem("editMode") === "true";
+let isWideLayout = localStorage.getItem("wideLayout") === "true";
+let isInputWide = localStorage.getItem("inputWide") === "true";
+let isFitHeight = localStorage.getItem("fitHeight") === "true";
+const defaultTextareaHeight = "350px";
+const heightToggle = document.getElementById("heightToggle");
+
+function scrollToTop(){
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function updateStickyHeaderVisibility(){
+    if(!stickyHeader) return;
+
+    const shouldShow = window.scrollY > 120;
+    stickyHeader.classList.toggle("hidden", !shouldShow);
+}
+
+function syncWidthToggleButtons(){
+    const text = isInputWide ? "↔" : "⇔";
+    const title = isInputWide ? "Thu gọn width của 2 input" : "Mở rộng width của 2 input";
+
+    if(widthToggleSticky){
+        widthToggleSticky.textContent = text;
+        widthToggleSticky.title = title;
+    }
+}
+
+function syncFitToggleButtons(){
+    const text = isFitHeight ? "⬚" : "⇕";
+    const title = isFitHeight ? "Thu gọn chiều cao input" : "Mở hết nội dung input";
+
+    if(heightToggle){
+        heightToggle.textContent = text;
+        heightToggle.title = title;
+    }
+}
 
 function toggleEditMode(){
     isEditMode = !isEditMode;
@@ -56,6 +104,54 @@ function toggleEditMode(){
 document.body.classList.toggle("edit-mode", isEditMode);
 editModeToggle.style.opacity = isEditMode ? "1" : "0.5";
 editModeToggle.addEventListener("click", toggleEditMode);
+
+function applyWideLayout(){
+    editorGrid.classList.toggle("single", isWideLayout);
+    layoutToggle.innerHTML = isWideLayout ? "📊" : "📐";
+}
+
+function applyInputWidth(){
+    document.body.classList.toggle("input-wide", isInputWide);
+}
+
+function applyFitHeight(){
+    const textareas = document.querySelectorAll(".editor-wrapper textarea");
+
+    textareas.forEach((ta) => {
+        if(isFitHeight){
+            ta.style.height = "auto";
+            ta.style.minHeight = "auto";
+            ta.style.overflowY = "hidden";
+            ta.style.height = `${ta.scrollHeight}px`;
+            ta.style.minHeight = `${ta.scrollHeight}px`;
+        }
+        else{
+            ta.style.height = defaultTextareaHeight;
+            ta.style.minHeight = defaultTextareaHeight;
+            ta.style.overflowY = "auto";
+        }
+    });
+}
+
+function toggleWideLayout(){
+    isWideLayout = !isWideLayout;
+    localStorage.setItem("wideLayout", isWideLayout);
+    applyWideLayout();
+}
+
+function toggleInputWidth(){
+    isInputWide = !isInputWide;
+    localStorage.setItem("inputWide", isInputWide);
+    applyInputWidth();
+    syncWidthToggleButtons();
+}
+
+function toggleFitHeight(){
+    isFitHeight = !isFitHeight;
+    localStorage.setItem("fitHeight", isFitHeight);
+    applyFitHeight();
+    syncFitToggleButtons();
+}
 
 let resultCollapsed = localStorage.getItem("resultCollapsed") === "true";
 
@@ -151,30 +247,12 @@ fontSizeSelect.addEventListener("change", (e) => {
 
 /* ================= HEIGHT TOGGLE ================= */
 
-const heightToggle = document.getElementById("heightToggle");
 let isCollapsed = localStorage.getItem("heightCollapsed") === "true";
 const minHeight = "100px";
-const maxHeight = "350px";
+const maxHeight = defaultTextareaHeight;
 
 function toggleHeight(){
-    isCollapsed = !isCollapsed;
-    const textareas = document.querySelectorAll(".editor-wrapper textarea");
-    
-    textareas.forEach(ta => {
-        if(isCollapsed){
-            ta.style.height = minHeight;
-            ta.style.minHeight = minHeight;
-        }
-        else{
-            ta.style.height = maxHeight;
-            ta.style.minHeight = maxHeight;
-        }
-    });
-    
-    heightToggle.textContent = isCollapsed ? "⬇️" : "⬆️";
-    heightToggle.title = isCollapsed ? "Mở rộng chiều cao input" : "Thu gọn chiều cao input";
-    
-    localStorage.setItem("heightCollapsed", isCollapsed);
+    toggleFitHeight();
 }
 
 // Restore height state on page load
@@ -184,11 +262,30 @@ if(isCollapsed){
         ta.style.height = minHeight;
         ta.style.minHeight = minHeight;
     });
-    heightToggle.textContent = "⬇️";
-    heightToggle.title = "Mở rộng chiều cao input";
 }
 
-heightToggle.addEventListener("click", toggleHeight);
+isCollapsed = false;
+syncWidthToggleButtons();
+syncFitToggleButtons();
+applyWideLayout();
+applyInputWidth();
+applyFitHeight();
+
+if(heightToggle){
+    heightToggle.addEventListener("click", toggleHeight);
+}
+
+if(widthToggleSticky){
+    widthToggleSticky.addEventListener("click", toggleInputWidth);
+}
+
+if(scrollTopButton){
+    scrollTopButton.addEventListener("click", scrollToTop);
+}
+
+window.addEventListener("scroll", updateStickyHeaderVisibility, { passive: true });
+window.addEventListener("resize", updateStickyHeaderVisibility);
+updateStickyHeaderVisibility();
 
     // Editor line-number elements removed
 
@@ -211,6 +308,10 @@ source.addEventListener("input", () => {
     );
 
     runCompare();
+
+    if(isFitHeight){
+        applyFitHeight();
+    }
 });
 target.addEventListener("input", () => {
     const cleaned = stripControlChars(target.value);
@@ -224,6 +325,10 @@ target.addEventListener("input", () => {
     );
 
     runCompare();
+
+    if(isFitHeight){
+        applyFitHeight();
+    }
 });
 
 // Removed scroll syncing for editor line numbers
@@ -233,12 +338,7 @@ target.addEventListener("input", () => {
 
 
 layoutToggle.onclick = () => {
-
-    const isSingle =
-        editorGrid.classList.toggle("single");
-
-    layoutToggle.innerHTML =
-        isSingle ? "📊" : "📐";
+    toggleWideLayout();
 };
 
 /* ================= UTIL ================= */
@@ -291,6 +391,14 @@ function normalizeForCompare(text){
 
         if(code === 0x3000){
             return [" "];
+        }
+
+        if(code === 0xFF0F){
+            return ["／"];
+        }
+
+        if(char === "、" || char === "。"){
+            return [char];
         }
 
         if(char === "…" || char === "‥" || char === "。" || char === "｡" || char === "．"){
@@ -430,7 +538,7 @@ function normalizeForCompare(text){
     // bracketCleaned = result.join("")
     //     .replace(/\s{2,}/g, " ")
     //     .trim();
-    let bracketCleaned = cleaned
+    let bracketCleaned = cleaned;
 
     // Pre-scan URLs so we can treat them as atomic (preserve exact characters)
     const urlRanges = [];
@@ -455,6 +563,12 @@ function normalizeForCompare(text){
         }
 
         const char = bracketCleaned[i];
+
+        if(char === "／"){
+            normalizedChars.push("／");
+            indexMap.push(i);
+            continue;
+        }
 
         if(whitespaceRegex.test(char)){
             continue;
@@ -879,9 +993,6 @@ function runCompare(){
 const themeToggle =
     document.getElementById("themeToggle");
 
-const themeToggleSticky =
-    document.getElementById("themeToggleSticky");
-
 const savedTheme =
     localStorage.getItem("theme") || "dark";
 
@@ -916,20 +1027,9 @@ function updateThemeIcon(){
         isDark ? "☀️" : "🌙";
 
     themeToggle.innerHTML = icon;
-
-    if(themeToggleSticky){
-
-        themeToggleSticky.innerHTML = icon;
-    }
 }
 
 themeToggle.onclick = toggleTheme;
-
-if(themeToggleSticky){
-
-    themeToggleSticky.onclick =
-        toggleTheme;
-}
 
 /* ================= HELP MODAL ================= */
 
